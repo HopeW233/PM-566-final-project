@@ -5,3 +5,6 @@ navbar:
   left:
     - text: "Home"
       href: index.html
+    - text: "About"
+      href: https://github.com/HopeW233/PM-566-final-project
+      
