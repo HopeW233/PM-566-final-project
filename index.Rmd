@@ -1,0 +1,10 @@
+---
+title: "PM566 Final Project"
+author: "Lin Wang"
+output: 
+    html_document:
+        toc: TRUE
+        toc_float: TRUE
+---
+
+This is my PM566 Final Project website.
