@@ -26,7 +26,7 @@ opts_chunk$set(
   warning = FALSE,
   message = FALSE,
   eval=TRUE,
-  echo = TRUE,
+  echo = FALSE,
   cache = FALSE,
   fig.width = 7, 
   fig.align = 'center',
@@ -45,21 +45,11 @@ opts_chunk$set(
 }
 ```
 
-## First step
-
-Source any necessary code, e.g. `process_covid_data.R`:
 
 ```{r load-data}
 source("process_COVID_data.R")
 ```
 
-<br>
-
-## Second step
-
-Then I will add some code to create the **plotly** figures
-
-Note: You need to name each code chunk, like this one: `plot1`
 
 ```{r plot1, class.source="code-r-small"}
 
@@ -89,11 +79,8 @@ p2_scatter <- cv_states_today_scatter %>%
          hovermode = "compare")
 ```
 
-<br>
 
-## Third step {.tabset}
-
-Create tabs to display each figure
+## Interactive Visualization {.tabset}
 
 ### Scatterplot: with DC
 
