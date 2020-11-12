@@ -50,7 +50,7 @@ source(knitr::purl("Midterm.rmd", quiet=FALSE))
 
 ## Scatterplots
 
-```{r plot1, class.source="code-r-small"}
+```{r plot1, class.source="code-r-small",echo = FALSE}
 p1 <- ggplot(covid_ca1)+
   geom_point(mapping = aes(x = date, y = newcases, color = month))+
   ggtitle("New cases in California by month")+
@@ -64,13 +64,13 @@ ggplotly(p1)
 
 ### Covid cases across California today
 
-```{r plot4, class.source="code-r-small"}
+```{r plot4, class.source="code-r-small",echo = FALSE}
 ggplotly(p2)
 ```
 
 ### Covid deaths across California today
 
-```{r plot5, class.source="code-r-small"}
+```{r plot5, class.source="code-r-small",echo = FALSE}
 ggplotly(p3)
 ```
 
@@ -80,7 +80,7 @@ ggplotly(p3)
 
 ### Counties in CA with top ten cases
 
-```{r plot6, class.source="code-r-small"}
+```{r plot6, class.source="code-r-small",echo = FALSE}
 top_10_cases %>%
   plot_ly(x = ~reorder(county,-cases), y =~cases, type = 'bar') %>%
   layout(title = "Counties in CA with top ten cases",
@@ -89,7 +89,7 @@ top_10_cases %>%
 
 ### Counties in CA with top ten deaths
 
-```{r plot7, class.source="code-r-small"}
+```{r plot7, class.source="code-r-small",echo = FALSE}
 top_10_deaths %>%
   plot_ly(x = ~reorder(county,-deaths), y =~deaths, type = 'bar') %>%
   layout(title = "Counties in CA with top ten deaths",

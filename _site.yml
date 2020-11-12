@@ -6,7 +6,7 @@ navbar:
     - text: "Home"
       href: index.html
     - text: "Lab 12"
-      href: lab12.html
+      href: Lab12.html
     - text: "About"
       href: https://github.com/HopeW233/PM-566-final-project
   right:
