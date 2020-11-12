@@ -13,16 +13,7 @@ This is my PM566 Final Project website.
 <br>
 
 ```{r setup, message=FALSE, echo=FALSE, warning=FALSE}
-
-library(data.table)
-library(tidyverse)
-library(dplyr)
-library(plotly)
-library(DT)
-library(knitr)
-
-# Initialize code chunk options
-opts_chunk$set(
+knitr::opts_chunk$set(
   warning = FALSE,
   message = FALSE,
   eval=TRUE,
@@ -33,6 +24,13 @@ opts_chunk$set(
   fig.asp = 0.618,
   out.width = "700px",
   class.source = "code-r")
+
+library(data.table)
+library(tidyverse)
+library(dplyr)
+library(plotly)
+library(ggplot2)
+library(DT)
 ```
 
 ```{css, echo = FALSE}
@@ -47,49 +45,53 @@ opts_chunk$set(
 
 
 ```{r load-data}
-source("process_COVID_data.R")
+source(knitr::purl("Midterm.rmd", quiet=FALSE))
 ```
 
+## Scatterplots
 
 ```{r plot1, class.source="code-r-small"}
-
-p1_scatter <- cv_states_today %>% 
-  plot_ly(x = ~pop_density, y = ~deathsper100k,
-          type = 'scatter', mode = 'markers', color = ~state,
-          size = ~population, sizes = c(5, 70), marker = list(sizemode='diameter', opacity=0.5),
-          hoverinfo = 'text',
-          text = ~paste( paste(state, ":", sep=""), paste(" Cases per 100k: ", per100k, sep="") , paste(" Deaths per 100k: ",
-                        deathsper100k, sep=""), sep = "<br>")) %>%
-  layout(title = "Population-normalized COVID-19 deaths vs. population density",
-                  yaxis = list(title = "Deaths per 100k"), xaxis = list(title = "Population Density"),
-         hovermode = "compare")
-
-# filter out "District of Columbia"
-cv_states_today_scatter <- cv_states_today %>% filter(state!="District of Columbia")
-
-p2_scatter <- cv_states_today_scatter %>% 
-  plot_ly(x = ~pop_density, y = ~deathsper100k,
-          type = 'scatter', mode = 'markers', color = ~state,
-          size = ~population, sizes = c(5, 70), marker = list(sizemode='diameter', opacity=0.5),
-          hoverinfo = 'text',
-          text = ~paste( paste(state, ":", sep=""), paste(" Cases per 100k: ", per100k, sep="") , paste(" Deaths per 100k: ",
-                        deathsper100k, sep=""), sep = "<br>")) %>%
-  layout(title = "Population-normalized COVID-19 deaths vs. population density",
-                  yaxis = list(title = "Deaths per 100k"), xaxis = list(title = "Population Density"),
-         hovermode = "compare")
+p1 <- ggplot(covid_ca1)+
+  geom_point(mapping = aes(x = date, y = newcases, color = month))+
+  ggtitle("New cases in California by month")+
+  theme_classic()
+ggplotly(p1)
 ```
 
+## Maps
 
-## Interactive Visualization {.tabset}
+##  {.tabset}
 
-### Scatterplot: with DC
+### Covid cases across California today
 
-```{r p1}
-p1_scatter
+```{r plot4, class.source="code-r-small"}
+ggplotly(p2)
 ```
 
-### Scatterplot: without DC
+### Covid deaths across California today
 
-```{r p2}
-p2_scatter
+```{r plot5, class.source="code-r-small"}
+ggplotly(p3)
+```
+
+## Bar Chart
+
+##  {.tabset}
+
+### Counties in CA with top ten cases
+
+```{r plot6, class.source="code-r-small"}
+top_10_cases %>%
+  plot_ly(x = ~reorder(county,-cases), y =~cases, type = 'bar') %>%
+  layout(title = "Counties in CA with top ten cases",
+         xaxis = list(title ="County"))
+```
+
+### Counties in CA with top ten deaths
+
+```{r plot7, class.source="code-r-small"}
+top_10_deaths %>%
+  plot_ly(x = ~reorder(county,-deaths), y =~deaths, type = 'bar') %>%
+  layout(title = "Counties in CA with top ten deaths",
+         xaxis = list(title ="County"))
 ```
