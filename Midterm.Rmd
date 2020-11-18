@@ -192,16 +192,16 @@ dat_today <- dat %>%
 mean_mortality <- sum(dat_today$deaths) / sum(dat_today$cases)
 
 fig2 <- dat_today %>%
-  ggplot(aes(reorder(state, Mortality), color = state, `Death Rate` = round(Mortality*100,2)))+
+  ggplot(aes(reorder(state, Mortality), ymin = Mortality - 2 * Std, ymax = Mortality + 2 * Std, color = state, `Death Rate` = round(Mortality*100,2)))+
   geom_point(aes(y = Mortality))+
   geom_hline(yintercept = mean_mortality, linetype = "dashed", color = "red")+
-  geom_errorbar(aes(ymin = Mortality - 2 * Std, ymax = Mortality + 2 * Std))+
   coord_flip()+
-  theme(text = element_text(size = 18), legend.position = "none")+
+  geom_errorbar()+
   labs(x = "State", y = "Death Rate", subtitle = "Hypothesis Test of Covid Death Rate")+
-  theme_bw()
+  theme_bw()+
+  theme(text = element_text(size = 18), legend.position = "none")
 
-ggplotly(fig2, tooltip = c("state", "Death Rate"))
+ggplotly(fig2)
 
 # pop_density vs. death rate
 fig3 <- dat_today %>%
@@ -220,10 +220,13 @@ fig4 <- dat %>%
   ggplot()+
   geom_point(aes(date, newcases, color = month))+
   stat_smooth(aes(date, newcases, color = month), method = lm, se = FALSE)+
-  geom_vline(aes(xintercept=`Start date`), linetype = "dashed", color = "red", size = 0.5)+
-  geom_vline(aes(xintercept=`End date`), linetype = "dashed", color = "darkred", size = 0.5)+
+  geom_vline(aes(xintercept=as.numeric(`Start date`)), linetype = "dashed", color = "red", size = 0.5)+
+  geom_vline(aes(xintercept=as.numeric(`End date`)), linetype = "dashed", color = "darkred", size = 0.5)+
+  geom_vline(aes(xintercept=as.numeric(ymd("2020-06-19"))), linetype = "dashed", color = "darkred", size = 0.5, text = "wear a mask")+ ##wear a mask
+  geom_vline(aes(xintercept=as.numeric(ymd("2020-07-13"))), linetype = "dashed", color = "darkred", size = 0.5, text = "wear a mask")+ ##ordering all bars and indoor dining at restaurants statewide to close
   ggtitle("New cases in California by month")+
   theme_classic()
+
 
 ggplotly(fig4)
 
@@ -232,27 +235,14 @@ ggplotly(fig4)
 ### 2. Covid trend by quarters and months
 
 ```{r trend by quarters, message=FALSE, eval=FALSE}
-# New cases by quarters
-ggplot(covid_ca)+
-  geom_boxplot(mapping = aes(group = Quarter, y = newcases, color = Quarter, fill = Quarter, alpha = 0.5))+
-  ggtitle("New cases in California by quarters")+
-  theme_classic()
-
-# Take a look at different month
-covid_ca1 = mutate(dat, month=substr(dat$date, 6, 7))
-covid_ca2 = mutate(covid_ca, month=substr(covid_ca$date, 6, 7))
-
-ggplot(covid_ca2)+
-  geom_point(mapping = aes(x = date, y = newcases, color = month))+
-  stat_smooth(aes(x = date, y = newcases, color = month), method = lm, se = FALSE)+
+cv_ca %>%
+  mutate(positiveRate = positive/totalTestResults) %>%
+  ggplot()+
+  geom_point(aes(date, positiveRate))+
+  geom_vline(aes(xintercept=as.numeric(ymd("2020-06-19"))), linetype = "dashed", color = "darkred", size = 0.5, text = "wear a mask")+ ##wear a mask
+  geom_vline(aes(xintercept=as.numeric(ymd("2020-07-13"))), linetype = "dashed", color = "darkred", size = 0.5, text = "wear a mask")+ ##ordering all bars and indoor dining at restaurants statewide to close
   ggtitle("New cases in California by month")+
   theme_classic()
-
-# Statistical summary graph
-ggplot(covid_ca1, mapping = aes(x = month, y = newcases))+
-  stat_summary(fun.data = "mean_sdl")+
-  ggtitle("Statistical summary graphs of new cases by month")+
-  theme_bw()
 ```
 
 - The 3th quarter(mean new_cases: 5000+) has more new cases than 2nd quarter(mean new_cases: 2500-).

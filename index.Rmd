@@ -31,6 +31,7 @@ library(dplyr)
 library(plotly)
 library(ggplot2)
 library(DT)
+library(lubridate)
 ```
 
 ```{css, echo = FALSE}
@@ -45,94 +46,260 @@ library(DT)
 
 ## **Introduction**
 
-On March 16, six counties in Bay Area became the first in the nation to announce shelter-in-place orders and on March19, California became the first to mandate a state-wide order. Since then, additional states across the country began 
-
-### 1. Dataset
-
-California daily covid data from [COVID19Tracking]<https://covidtracking.com/data/download> 
-
-Covid data per US counties from [NYT]
-<https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv>
-
-2018 State population data from [NYT] <https://raw.githubusercontent.com/COVID19Tracking/associated-data/master/us_census_data/us_census_2018_population_estimates_states.csv>
-
-Lockdown data from [Aura Vision's Lockdown Tracker]<https://covid19-lockdown-tracker.netlify.com/lockdown_dates.csv>
-
-
-### 2. Formulated question
-
-The objective for this project is to investigate:
+At the early stage of COVID 19 pandemic, New York was hardest hit with large population. On March 16, six counties in Bay Area became the first in the nation to announce shelter-in-place orders and on March19, California became the first to mandate a state-wide order. Since then, additional states across the country began implementing state-wide restrictions. This project is trying to evaluate:
 
 1. Association between COVID death rate and pop density.
 
-2. Is there any difference in COVID trend after safe at home policy announcement?
-
-
-```{r load-data}
-source(knitr::purl("Midterm.rmd", quiet=FALSE))
-```
+2. The effect of safe-at-home order on COVID pandemic.
 
 ## **Methods**
 
-## **Results**
+### 1. Read in the Data
 
-### Overview of data set
+The data was obtained from multiple sources:
+
+California daily covid data: [COVID19Tracking](https://covidtracking.com/data/download)
+
+Covid data per US counties: [NYT]
+(https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv)
+
+2018 State population data: [NYT] (https://raw.githubusercontent.com/COVID19Tracking/associated-data/master/us_census_data/us_census_2018_population_estimates_states.csv)
+
+Lockdown data: [Aura Vision's Lockdown Tracker](https://covid19-lockdown-tracker.netlify.com/lockdown_dates.csv)
+
+```{r read in data, echo=FALSE}
+download.file("https://covidtracking.com/data/download/national-history.csv", destfile = "national-history.csv")
+cv_national <- fread("national-history.csv")
+
+# Getting CA covid history data
+download.file("https://covidtracking.com/data/download/california-history.csv", destfile = "california-history.csv")
+cv_ca <- fread("california-history.csv")
+
+# Getting covid data per county in CA
+download.file("https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv", destfile = "us-counties.csv", method="libcurl", timeout = 60)
+counties <- fread("us-counties.csv")
+
+download.file("https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv", destfile = "us-states.csv", method="libcurl", timeout = 60)
+states <- fread("us-states.csv")
+
+#
+download.file("https://raw.githubusercontent.com/COVID19Tracking/associated-data/master/us_census_data/us_census_2018_population_estimates_states.csv", destfile = "us_census_2018_population_estimates_states.csv")
+pop <- fread("us_census_2018_population_estimates_states.csv")
+
+#
+download.file("https://covid19-lockdown-tracker.netlify.com/lockdown_dates.csv", destfile = "lockdown_dates.csv")
+lockdown <- fread("lockdown_dates.csv")
+
+#
+cv_states <- merge(
+  x = states,
+  y = pop,
+  by.x = "state",
+  by.y = "state_name",
+  all.x = TRUE, all.y = FALSE
+)
+
+lockdown <- lockdown %>%
+  filter(Country == "United States")
+
+cv_states <- merge(
+  x = cv_states,
+  y = lockdown,
+  by.x = "state",
+  by.y = "Place",
+  all.x = TRUE, all.y = FALSE
+)
+
+dat <- cv_states %>%
+  select(state, date, cases, deaths, population, pop_density, `Start date`, `End date`)
+```
+
+`data.table` is used to download and read in large data, EDA checklist was done to check dimensions, headers, footers, variable names and types.
+
+### 2. Create, rename, format variables, check if any missing values
+
+New variables and some outliers were created or corrected using `data.table`, `tidyverse` and `dplyr`, date variable was re-formatted into correct format by `lubridate`, `NA` in death and cases columns were kept because it would not affect our analysis.
+
 ```{r, echo=FALSE}
+# selecting columns we need
+cv_national <- cv_national[, .(date, states, death, deathIncrease, positive, recovered, totalTestResults)] %>%
+  rename(newdeaths = deathIncrease, tests = totalTestResults)
+cv_national$date <- as.Date(cv_national$date)
+
+#
+cv_national <- cv_national %>%
+  mutate(CFR = round((death*100/(death+recovered)), 2)) %>%
+  mutate(IFR = round((death*100/positive), 2))
+
+cv_national[CFR == Inf, CFR := 0]
+cv_national[IFR == Inf, IFR := 0]
+cv_national[death > positive, CFR := 0]
+# format
+dat$date <- as.Date(dat$date)
+dat$`Start date` <- as.Date(dat$`Start date`)
+dat$`End date` <- as.Date(dat$`End date`)
+
+state_list <- unique(dat$state)
+dat$state <- factor(dat$state, levels = state_list)
+
+# Creating new variables
+dat <- dat %>%
+  mutate(newcases = cases - lag(cases, 1)) %>%
+  mutate(newdeaths = deaths - lag(deaths, 1)) %>%
+  mutate(death_rate = round((deaths*100/(cases)), 2)) %>%
+  mutate(month = substr(dat$date, 6, 7))
+  
+
+dat[newcases < 0, newcases := 0]
+dat[newdeaths <0, newdeaths := 0]
+dat[death_rate == Inf, death_rate := 0]
+dat[deaths > cases, death_rate := 0]
+
+dat$per100k =  as.numeric(format(round(dat$cases/(dat$population/100000),1),nsmall=1))
+dat$newper100k =  as.numeric(format(round(dat$newcases/(dat$population/100000),1),nsmall=1))
+dat$deathsper100k =  as.numeric(format(round(dat$deaths/(dat$population/100000),1),nsmall=1))
+dat$newdeathsper100k =  as.numeric(format(round(dat$newdeaths/(dat$population/100000),1),nsmall=1))
+
+# Creating Quarter variable
+counties$date <- as.Date(counties$date)
+
+ca_county <- counties %>%
+  filter(state == "California") %>%
+  mutate(newcases = cases - lag(cases, 1)) %>%
+  mutate(newdeaths = deaths - lag(deaths, 1)) %>%
+  mutate(death_rate = round((deaths*100/(cases)), 2))
+  
+
+ca_county[newcases < 0, newcases := 0]
+ca_county[newdeaths <0, newdeaths := 0]
+ca_county[death_rate == Inf, death_rate := 0]
+ca_county[deaths > cases, death_rate := 0]
+```
+
+### 3. Data Visualization
+
+The tools used to visualize data mainly are `ggplot`, `plotly` and `DT`.
+
+## **Results** 
+
+### Table 1: Overview of data set
+
+```{r, echo=FALSE}
+table <- dat %>%
+  select(state, date, cases, deaths, newcases, newdeaths, death_rate, per100k, deathsper100k) %>%
+ arrange(state, desc(date))
+
 datatable(table)
 ```
 
-### Developing trends of CFR and IFR 
+Table 1 present a time series information for COVID cases and deaths on state level, daily data and the latest summary could be easily accessed by searching and ordering.
+
+### Figure 1: Ongoing trends of COVID 19 CFR and IFR 
+
 ```{r, echo=FALSE}
+fig1 <- cv_national %>%
+  ggplot()+
+  geom_line(aes(date, CFR), color = "skyblue", size = 0.8, na.rm = TRUE)+
+  geom_line(aes(date, IFR), color = "#69b3a2", size = 0.8, na.rm = TRUE)+
+  geom_vline(aes(xintercept=as.numeric(ymd("2020-03-25"))), linetype = "dashed", color = "red", size = 0.5)+
+  geom_vline(aes(xintercept=as.numeric(ymd("2020-02-26"))), linetype = "dashed", color = "darkred", size = 0.5)+
+  labs(title = "Overview of COVID 19 CFR and IFR in US", y = "CFR/IFR")+
+  theme_bw()
+
 ggplotly(fig1)
 ```
 
-### Hypothesis Test of Covid Death Rate
-```{r, echo=FALSE}
+Figure 1 tells the developing trends of COVID 19 CFR and IFR in US. The green line is infection fatality ratio (IFR), which estimates the proportion of deaths among all infected individuals. The blue line is case fatality ratio (CFR), which estimates the proportion of deaths among identified confirmed cases. During this ongoing epidemic, some of the active cases already detected may subsequently die, leading to underestimation of CFR estimated before their death. In order to mitigate the bias due to delays to case resolution during an ongoing outbreak, the CFR is calculated by this formula: No. of deaths from disease/(No. of deaths from disease+No. of recovered from disease) * 100. However, In this case, CFR may be overestimated if people die quicker than they recover.
+
+
+### Figure 2: Hypothesis Test of Covid Death Rate
+
+```{r echo=FALSE, fig.height=18, fig.width=18}
+dat_today <- dat %>%
+  filter(date == max(date)) %>%
+  mutate(Mortality = deaths / cases) %>% 
+  mutate(Std = sqrt((Mortality * (1 - Mortality))/sqrt(cases)))
+
+mean_mortality <- sum(dat_today$deaths) / sum(dat_today$cases)
+
+fig2 <- dat_today %>%
+  ggplot(aes(reorder(state, Mortality), ymin = Mortality - 2 * Std, ymax = Mortality + 2 * Std, color = state, `Death Rate` = round(Mortality*100,2)))+
+  geom_point(aes(y = Mortality))+
+  geom_hline(yintercept = mean_mortality, linetype = "dashed", color = "red")+
+  coord_flip()+
+  geom_errorbar()+
+  labs(x = "State", y = "Death Rate", subtitle = "Hypothesis Test of Covid Death Rate")+
+  theme_bw()+
+  theme(text = element_text(size = 18), legend.position = "none")
+
 ggplotly(fig2, tooltip = c("state", "Death Rate"))
+#fig2
 ```
 
-### COVID-19 death rate vs. population density
+Figure 2 shows death rate for each state, New York, New Jersey, Massachusetts and Connecticut are states with higher death rates. The red line indicates the mean death rate.
+
+### Figure 3: COVID-19 death rate vs. population density
+
 ```{r, echo=FALSE}
+fig3 <- dat_today %>%
+  filter(state!="District of Columbia") %>%
+  plot_ly(x = ~pop_density, y = ~death_rate,
+          type = "scatter", mode = "markers", color = ~state, 
+          size = ~population, sizes = c(5, 70), marker = list(sizemode='diameter', opacity=0.5),
+          hoverinfo = "text",
+          text = ~paste(paste(state, ":", sep=""), paste("Cases per 100k: ", per100k, sep="") , paste("Deaths per 100k: ", deathsper100k, sep=""), paste("Death Rate: ", death_rate, sep=""), sep = "<br>"))
+
 fig3
 ```
 
-### New cases in California by month
+Figure 3 presents a potential positive association between population density and death rate. States with larger population but lower population density have lower death rate, and perhaps location and people behavior differentiate this.
+
+### Figure 4: New cases in California by month
+
 ```{r, echo=FALSE}
+fig4 <- dat %>%
+  filter(state == "California") %>%
+  ggplot()+
+  geom_point(aes(date, newcases, color = month))+
+  stat_smooth(aes(date, newcases, color = month), method = lm, se = FALSE)+
+  geom_vline(aes(xintercept=as.numeric(`Start date`)), linetype = "dashed", color = "red", size = 0.5)+
+  geom_vline(aes(xintercept=as.numeric(`End date`)), linetype = "dashed", color = "darkred", size = 0.5)+
+  geom_vline(aes(xintercept=as.numeric(ymd("2020-06-18"))), linetype = "dashed", color = "orange", size = 0.5, text = "wear a mask")+ ##wear a mask
+  geom_vline(aes(xintercept=as.numeric(ymd("2020-07-13"))), linetype = "dashed", color = "brown", size = 0.5, text = "wear a mask")+ ##ordering all bars and indoor dining at restaurants statewide to close
+  ggtitle("New cases in California by month")+
+  theme_classic()
+
 ggplotly(fig4)
 ```
 
+Figure 4 show new cases development in California. On March 19, California mandate a state wide safe-at-home order, and on May 25, the order ends and many communities are into reopening plans. On June 18, governor Newsom ordered all Californians to wear face coverings in public places. On July 13, statewide closures were announced. All bars and indoor dining at restaurants must close completely. 
 
-### Map on county level
-
-###  {.tabset}
-
-### Covid cases across California today
-
-```{r plot4, class.source="code-r-small",echo = FALSE}
-ggplotly(p2)
-```
-
-### Covid deaths across California today
-
-```{r plot5, class.source="code-r-small",echo = FALSE}
-ggplotly(p3)
-```
-
-### Counties in CA with top ten cases/deaths{.tabset}
+### Figure 5: Counties in CA with top ten cases
 
 ```{r plot6, class.source="code-r-small",echo = FALSE}
+top_cases <- ca_county %>%
+  filter(date == max(date)) %>%
+  select(county, cases) %>%
+  arrange(desc(cases))
+top_10_cases <- top_cases[1:10,]
+
 top_10_cases %>%
   plot_ly(x = ~reorder(county,-cases), y =~cases, type = 'bar') %>%
   layout(title = "Counties in CA with top ten cases",
          xaxis = list(title ="County"))
 ```
 
-```{r plot7, class.source="code-r-small",echo = FALSE}
-top_10_deaths %>%
-  plot_ly(x = ~reorder(county,-deaths), y =~deaths, type = 'bar') %>%
-  layout(title = "Counties in CA with top ten deaths",
-         xaxis = list(title ="County"))
-```
+Figure 5 tells Los Angeles County has the most COVID cases across the state. 
+
+Useful website: https://covid19.ca.gov/safer-economy/ to see current risk tier of each county.
 
 ## **Conclusion**
+
+1. COVID death rate is associated with population density. 
+2. Stay home order has an positive impact on COVID pandemic.
+
+The downside of this project is that lockdown data is not up-to-date and CFR is sophisticated to estimate.
+
+**Suggestion: stay at home and keep practicing social distance and wearing masks!**
+
 
