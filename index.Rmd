@@ -34,16 +34,6 @@ library(DT)
 library(lubridate)
 ```
 
-```{css, echo = FALSE}
-.code-r { /* Code block */
-  font-size: 15px;
-}
-
-.code-r-small { /* Code block */
-  font-size: 10px;
-}
-```
-
 ## **Introduction**
 
 At the early stage of COVID 19 pandemic, New York was hardest hit with large population. On March 16, six counties in Bay Area became the first in the nation to announce shelter-in-place orders and on March19, California became the first to mandate a state-wide order. Since then, additional states across the country began implementing state-wide restrictions. This project is trying to evaluate:
@@ -51,6 +41,8 @@ At the early stage of COVID 19 pandemic, New York was hardest hit with large pop
 1. Association between COVID death rate and pop density.
 
 2. The effect of safe-at-home order on COVID pandemic.
+
+<br>
 
 ## **Methods**
 
@@ -180,6 +172,8 @@ ca_county[deaths > cases, death_rate := 0]
 
 The tools used to visualize data mainly are `ggplot`, `plotly` and `DT`.
 
+<br>
+
 ## **Results** 
 
 ### Table 1: Overview of data set
@@ -274,24 +268,7 @@ ggplotly(fig4)
 
 Figure 4 show new cases development in California. On March 19, California mandate a state wide safe-at-home order, and on May 25, the order ends and many communities are into reopening plans. On June 18, governor Newsom ordered all Californians to wear face coverings in public places. On July 13, statewide closures were announced. All bars and indoor dining at restaurants must close completely. 
 
-### Figure 5: Counties in CA with top ten cases
-
-```{r plot6, class.source="code-r-small",echo = FALSE}
-top_cases <- ca_county %>%
-  filter(date == max(date)) %>%
-  select(county, cases) %>%
-  arrange(desc(cases))
-top_10_cases <- top_cases[1:10,]
-
-top_10_cases %>%
-  plot_ly(x = ~reorder(county,-cases), y =~cases, type = 'bar') %>%
-  layout(title = "Counties in CA with top ten cases",
-         xaxis = list(title ="County"))
-```
-
-Figure 5 tells Los Angeles County has the most COVID cases across the state. 
-
-Useful website: https://covid19.ca.gov/safer-economy/ to see current risk tier of each county.
+<br>
 
 ## **Conclusion**
 
