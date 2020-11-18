@@ -8,11 +8,11 @@ output:
 ---
 <br>
 
-This is my PM566 Final Project website.
+This is my PM566 Final Project website, you can access the full report [here]()
 
 <br>
 
-```{r setup, message=FALSE, echo=FALSE, warning=FALSE}
+```{r setup, message=FALSE, warning=FALSE, include=FALSE}
 knitr::opts_chunk$set(
   warning = FALSE,
   message = FALSE,
@@ -43,24 +43,68 @@ library(DT)
 }
 ```
 
+## **Introduction**
+
+On March 16, six counties in Bay Area became the first in the nation to announce shelter-in-place orders and on March19, California became the first to mandate a state-wide order. Since then, additional states across the country began 
+
+### 1. Dataset
+
+California daily covid data from [COVID19Tracking]<https://covidtracking.com/data/download> 
+
+Covid data per US counties from [NYT]
+<https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv>
+
+2018 State population data from [NYT] <https://raw.githubusercontent.com/COVID19Tracking/associated-data/master/us_census_data/us_census_2018_population_estimates_states.csv>
+
+Lockdown data from [Aura Vision's Lockdown Tracker]<https://covid19-lockdown-tracker.netlify.com/lockdown_dates.csv>
+
+
+### 2. Formulated question
+
+The objective for this project is to investigate:
+
+1. Association between COVID death rate and pop density.
+
+2. Is there any difference in COVID trend after safe at home policy announcement?
+
 
 ```{r load-data}
 source(knitr::purl("Midterm.rmd", quiet=FALSE))
 ```
 
-## Scatterplots
+## **Methods**
 
-```{r plot1, class.source="code-r-small",echo = FALSE}
-p1 <- ggplot(covid_ca1)+
-  geom_point(mapping = aes(x = date, y = newcases, color = month))+
-  ggtitle("New cases in California by month")+
-  theme_classic()
-ggplotly(p1)
+## **Results**
+
+### Overview of data set
+```{r, echo=FALSE}
+datatable(table)
 ```
 
-## Maps
+### Developing trends of CFR and IFR 
+```{r, echo=FALSE}
+ggplotly(fig1)
+```
 
-##  {.tabset}
+### Hypothesis Test of Covid Death Rate
+```{r, echo=FALSE}
+ggplotly(fig2, tooltip = c("state", "Death Rate"))
+```
+
+### COVID-19 death rate vs. population density
+```{r, echo=FALSE}
+fig3
+```
+
+### New cases in California by month
+```{r, echo=FALSE}
+ggplotly(fig4)
+```
+
+
+### Map on county level
+
+###  {.tabset}
 
 ### Covid cases across California today
 
@@ -74,11 +118,7 @@ ggplotly(p2)
 ggplotly(p3)
 ```
 
-## Bar Chart
-
-##  {.tabset}
-
-### Counties in CA with top ten cases
+### Counties in CA with top ten cases/deaths{.tabset}
 
 ```{r plot6, class.source="code-r-small",echo = FALSE}
 top_10_cases %>%
@@ -87,11 +127,12 @@ top_10_cases %>%
          xaxis = list(title ="County"))
 ```
 
-### Counties in CA with top ten deaths
-
 ```{r plot7, class.source="code-r-small",echo = FALSE}
 top_10_deaths %>%
   plot_ly(x = ~reorder(county,-deaths), y =~deaths, type = 'bar') %>%
   layout(title = "Counties in CA with top ten deaths",
          xaxis = list(title ="County"))
 ```
+
+## **Conclusion**
+

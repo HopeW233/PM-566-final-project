@@ -3,7 +3,7 @@ output_dir: "."
 navbar:
   title: "My Website"
   left:
-    - text: "HW5"
+    - text: "Home"
       href: index.html
     - text: "Lab 12"
       href: Lab12.html
@@ -11,7 +11,7 @@ navbar:
       href: https://github.com/HopeW233/PM-566-final-project
   right:
     - icon: fa-github fa-lg
-      href: https://github.com/HopeW233   
+      href: https://github.com/HopeW233 
 output:
   html_document:
     theme: cosmo
