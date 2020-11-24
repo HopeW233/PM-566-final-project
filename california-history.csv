@@ -1,4 +1,10 @@
 "date","state","dataQualityGrade","death","deathConfirmed","deathIncrease","deathProbable","hospitalized","hospitalizedCumulative","hospitalizedCurrently","hospitalizedIncrease","inIcuCumulative","inIcuCurrently","negative","negativeIncrease","negativeTestsAntibody","negativeTestsPeopleAntibody","negativeTestsViral","onVentilatorCumulative","onVentilatorCurrently","positive","positiveCasesViral","positiveIncrease","positiveScore","positiveTestsAntibody","positiveTestsAntigen","positiveTestsPeopleAntibody","positiveTestsPeopleAntigen","positiveTestsViral","recovered","totalTestEncountersViral","totalTestEncountersViralIncrease","totalTestResults","totalTestResultsIncrease","totalTestsAntibody","totalTestsAntigen","totalTestsPeopleAntibody","totalTestsPeopleAntigen","totalTestsPeopleViral","totalTestsPeopleViralIncrease","totalTestsViral","totalTestsViralIncrease"
+"2020-11-23","CA","B",18726,,50,,,,6254,0,,1455,21347174,211898,,,,,,1110370,1110370,8337,0,,,,,,,,0,22457544,220235,,,,,,0,22457544,220235
+"2020-11-22","CA","B",18676,,33,,,,5918,0,,1390,21135276,251158,,,,,,1102033,1102033,14319,0,,,,,,,,0,22237309,265477,,,,,,0,22237309,265477
+"2020-11-21","CA","B",18643,,86,,,,5745,0,,1332,20884118,225839,,,,,,1087714,1087714,15442,0,,,,,,,,0,21971832,241281,,,,,,0,21971832,241281
+"2020-11-20","CA","B",18557,,91,,,,5497,0,,1332,20658279,165018,,,,,,1072272,1072272,13005,0,,,,,,,,0,21730551,178023,,,,,,0,21730551,178023
+"2020-11-19","CA","B",18466,,106,,,,5319,0,,1253,20493261,122507,,,,,,1059267,1059267,11478,0,,,,,,,,0,21552528,133985,,,,,,0,21552528,133985
+"2020-11-18","CA","B",18360,,61,,,,5078,0,,1258,20370754,149656,,,,,,1047789,1047789,9811,0,,,,,,,,0,21418543,159467,,,,,,0,21418543,159467
 "2020-11-17","CA","B",18299,,36,,,,4885,0,,1206,20221098,181439,,,,,,1037978,1037978,8743,0,,,,,,,,0,21259076,190182,,,,,,0,21259076,190182
 "2020-11-16","CA","B",18263,,10,,,,4559,0,,1131,20039659,192219,,,,,,1029235,1029235,9890,0,,,,,,,,0,21068894,202109,,,,,,0,21068894,202109
 "2020-11-15","CA","B",18253,,35,,,,4454,0,,1094,19847440,184221,,,,,,1019345,1019345,10968,0,,,,,,,,0,20866785,195189,,,,,,0,20866785,195189

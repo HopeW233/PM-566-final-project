@@ -1,5 +1,5 @@
 ---
-title: "PM566 Final Project"
+title: "Hope.fun "
 author: "Lin Wang"
 output: 
     html_document:
@@ -8,7 +8,7 @@ output:
 ---
 <br>
 
-This is my PM566 Final Project website, you can access the full report [here]()
+This is my PM566 Final Project, you can access the full report [here]()
 
 <br>
 
@@ -50,12 +50,11 @@ At the early stage of COVID 19 pandemic, New York was hardest hit with large pop
 
 The data was obtained from multiple sources:
 
-California daily covid data: [COVID19Tracking](https://covidtracking.com/data/download)
+National daily COVID data: [COVID19Tracking](https://covidtracking.com/data/download)
 
-Covid data per US counties: [NYT]
-(https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv)
+Covid data per US states: [NYT] <https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv>
 
-2018 State population data: [NYT] (https://raw.githubusercontent.com/COVID19Tracking/associated-data/master/us_census_data/us_census_2018_population_estimates_states.csv)
+2018 State population data: [NYT] <https://raw.githubusercontent.com/COVID19Tracking/associated-data/master/us_census_data/us_census_2018_population_estimates_states.csv>
 
 Lockdown data: [Aura Vision's Lockdown Tracker](https://covid19-lockdown-tracker.netlify.com/lockdown_dates.csv)
 
@@ -176,18 +175,13 @@ The tools used to visualize data mainly are `ggplot`, `plotly` and `DT`.
 
 ## **Results** 
 
-### Table 1: Overview of data set
-
-```{r, echo=FALSE}
+```{r, echo=FALSE, eval=FALSE}
 table <- dat %>%
   select(state, date, cases, deaths, newcases, newdeaths, death_rate, per100k, deathsper100k) %>%
  arrange(state, desc(date))
 
 datatable(table)
 ```
-
-Table 1 present a time series information for COVID cases and deaths on state level, daily data and the latest summary could be easily accessed by searching and ordering.
-
 ### Figure 1: Ongoing trends of COVID 19 CFR and IFR 
 
 ```{r, echo=FALSE}
@@ -226,8 +220,7 @@ fig2 <- dat_today %>%
   theme_bw()+
   theme(text = element_text(size = 18), legend.position = "none")
 
-ggplotly(fig2, tooltip = c("state", "Death Rate"))
-#fig2
+fig2
 ```
 
 Figure 2 shows death rate for each state, New York, New Jersey, Massachusetts and Connecticut are states with higher death rates. The red line indicates the mean death rate.
@@ -248,23 +241,58 @@ fig3
 
 Figure 3 presents a potential positive association between population density and death rate. States with larger population but lower population density have lower death rate, and perhaps location and people behavior differentiate this.
 
-### Figure 4: New cases in California by month
+### Figure 4: New cases development in California 
 
 ```{r, echo=FALSE}
-fig4 <- dat %>%
+dat_policy <- dat %>%
   filter(state == "California") %>%
-  ggplot()+
-  geom_point(aes(date, newcases, color = month))+
-  stat_smooth(aes(date, newcases, color = month), method = lm, se = FALSE)+
-  geom_vline(aes(xintercept=as.numeric(`Start date`)), linetype = "dashed", color = "red", size = 0.5)+
-  geom_vline(aes(xintercept=as.numeric(`End date`)), linetype = "dashed", color = "darkred", size = 0.5)+
+  mutate(policy = ifelse(date %in% `Start date`:`End date`, "first order", 
+                         ifelse(date %in% ymd("2020-07-13"):ymd("2020-09-22"),"statewide order",
+                                ifelse(date >= ymd("2020-11-21"), "limited lockdown", "loose"))))
+
+fig4 <- dat_policy %>%
+  ggplot(aes(x = date, y = newcases))+
+  annotate(geom = "rect", xmin = ymd(min(dat_policy$date)), xmax = ymd("2020-03-19"), ymin =0, ymax = 15000, fill = "blue", alpha = 0.2)+
+  annotate("text", x = ymd("2020-02-15"), y = 7000, label = "loose")+
+  annotate(geom = "rect", xmin = ymd("2020-03-19"), xmax = ymd("2020-05-25"), ymin =0, ymax = 15000, fill = "red", alpha = 0.2)+
+  annotate("text", x = ymd("2020-04-20"), y = 7000, label = "first order")+
+  annotate(geom = "rect", xmin = ymd("2020-05-25"), xmax = ymd("2020-07-13"), ymin =0, ymax = 15000, fill = "blue", alpha = 0.2)+
+  annotate("text", x = ymd("2020-06-15"), y = 7000, label = "loose")+
+  annotate(geom = "rect", xmin = ymd("2020-07-13"), xmax = ymd("2020-09-22"), ymin =0, ymax = 15000, fill = "red", alpha = 0.2)+
+  annotate("text", x = ymd("2020-08-15"), y = 7000, label = "statewide order")+
+  annotate(geom = "rect", xmin = ymd("2020-09-22"), xmax = ymd("2020-11-21"), ymin =0, ymax = 15000, fill = "blue", alpha = 0.2)+
+  annotate("text", x = ymd("2020-10-20"), y = 7000, label = "loose")+
+  annotate(geom = "rect", xmin = ymd("2020-11-21"), xmax = ymd(max(dat_policy$date)), ymin =0, ymax = 15000, fill = "red", alpha = 0.2)+
+  annotate("text", x = ymd("2020-11-21"), y = 7000, label = "limited lockdown")+
+  geom_line(color = "#69b3a2")+
   geom_vline(aes(xintercept=as.numeric(ymd("2020-06-18"))), linetype = "dashed", color = "orange", size = 0.5, text = "wear a mask")+ ##wear a mask
-  geom_vline(aes(xintercept=as.numeric(ymd("2020-07-13"))), linetype = "dashed", color = "brown", size = 0.5, text = "wear a mask")+ ##ordering all bars and indoor dining at restaurants statewide to close
-  ggtitle("New cases in California by month")+
-  theme_classic()
+  theme_classic()+
+  ggtitle("COVID new cases development in California")
 
 ggplotly(fig4)
+
+fig5 <- dat_policy %>%
+  ggplot()+
+  geom_boxplot(aes(group = policy, y = newcases, color = policy, fill = policy, alpha = 0.5))+
+  theme_bw()+
+  ggtitle("COVID new cases distribution in California under different policy")
+
+ggplotly(fig5)
 ```
+
+```{r, echo=FALSE, eval=FALSE}
+dat_policy %>%
+  ggplot(aes(x = policy, y = newcases))+
+  stat_summary(fun.data = "mean_sdl")+
+  theme_bw()
+
+dat_policy %>%
+  ggplot()+
+  geom_boxplot(aes(group = policy, y = newcases, color = policy, fill = policy, alpha = 0.5))+
+  facet_wrap(~policy, nrow = 2)+
+  theme_bw()
+```
+
 
 Figure 4 show new cases development in California. On March 19, California mandate a state wide safe-at-home order, and on May 25, the order ends and many communities are into reopening plans. On June 18, governor Newsom ordered all Californians to wear face coverings in public places. On July 13, statewide closures were announced. All bars and indoor dining at restaurants must close completely. 
 
