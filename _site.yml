@@ -8,8 +8,10 @@ navbar:
     - text: "Lab 12"
       href: Lab12.html
     - text: "About"
-      href: https://github.com/HopeW233/PM-566-final-project
+      href: info.html
   right:
+    - text: "Report download"
+      href: PM566_final_project.pdf
     - icon: fa-github fa-lg
       href: https://github.com/HopeW233 
 output:

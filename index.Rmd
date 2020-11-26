@@ -8,7 +8,7 @@ output:
 ---
 <br>
 
-This is my PM566 Final Project, you can access the full report [here](https://github.com/HopeW233/PM-566-final-project/blob/master/PM566_final_project.pdf)
+This is my PM566 Final Project, you can access the full project [here](https://github.com/HopeW233/PM-566-final-project)
 
 <br>
 

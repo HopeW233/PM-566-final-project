@@ -1,0 +1,13 @@
+---
+title: 'Personal Information'
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+---
+
+My name is Lin Wang, and I have a nickname Hope.
+
+Currently I am a master student at USC, majoring in Applied Biostatistics and Epidemiology. And I obtained my undergraduate degree at Zhejiang University in China, majoring in Veterinary Medicine. 
+
+Contact me at *lwang667@usc.edu*
