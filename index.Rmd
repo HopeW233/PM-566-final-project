@@ -72,22 +72,19 @@ cv_national <- fread("national-history.csv")
 download.file("https://covidtracking.com/data/download/california-history.csv", destfile = "california-history.csv")
 cv_ca <- fread("california-history.csv")
 
-# Getting covid data per county in CA
-download.file("https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv", destfile = "us-counties.csv", method="libcurl", timeout = 60)
-counties <- fread("us-counties.csv")
-
+# state level data
 download.file("https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv", destfile = "us-states.csv", method="libcurl", timeout = 60)
 states <- fread("us-states.csv")
 
-#
+# population data
 download.file("https://raw.githubusercontent.com/COVID19Tracking/associated-data/master/us_census_data/us_census_2018_population_estimates_states.csv", destfile = "us_census_2018_population_estimates_states.csv")
 pop <- fread("us_census_2018_population_estimates_states.csv")
 
-#
+# lockdown data
 download.file("https://covid19-lockdown-tracker.netlify.com/lockdown_dates.csv", destfile = "lockdown_dates.csv")
 lockdown <- fread("lockdown_dates.csv")
 
-#
+# merge data sets
 cv_states <- merge(
   x = states,
   y = pop,
@@ -337,4 +334,8 @@ The downside of this project is that CFR is sophisticated to estimate and lockdo
 
 **Suggestion: stay at home and keep practicing social distance and wearing masks!**
 
+```{r echo=FALSE, eval=FALSE}
+write.csv(dat, "\\Users\\Hope\\Documents\\PM-566-final-project\\data\\dat.csv", row.names = FALSE)
+write.csv(dat_policy, "\\Users\\Hope\\Documents\\PM-566-final-project\\data\\dat_policy.csv", row.names = FALSE)
+```
 
