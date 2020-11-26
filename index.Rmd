@@ -1,14 +1,14 @@
 ---
-title: "Hope.fun "
+title: 'Prediction of COVID-19 death rate and effect of policy responses in California'
 author: "Lin Wang"
-output: 
-    html_document:
-        toc: TRUE
-        toc_float: TRUE
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
 ---
 <br>
 
-This is my PM566 Final Project, you can access the full report [here]()
+This is my PM566 Final Project, you can access the full report [here](https://github.com/HopeW233/PM-566-final-project/blob/master/PM566_final_project.pdf)
 
 <br>
 
@@ -36,11 +36,17 @@ library(lubridate)
 
 ## **Introduction**
 
-At the early stage of COVID 19 pandemic, New York was hardest hit with large population. On March 16, six counties in Bay Area became the first in the nation to announce shelter-in-place orders and on March19, California became the first to mandate a state-wide order. Since then, additional states across the country began implementing state-wide restrictions. This project is trying to evaluate:
+COVID-19 is a highly contagious disease which affected most states and counties in the United
+States. The residents living in areas
+with high population density may have more chance to get into close contact with others.
 
-1. Association between COVID death rate and pop density.
+Some countries have been very successful in preventing the spread of the disease, some might have been worse hit than others. Differences in government responses could explain part of this. To understand whether the government policy is effective against the outbreak, it is essential to look at the timing and strictness of responses.
 
-2. The effect of safe-at-home order on COVID pandemic.
+This project is trying to evaluate:
+
+1. Association between COVID death rate and population density in United States.
+
+2. Effect of policy responses to COVID pandemic in California.
 
 <br>
 
@@ -169,7 +175,7 @@ ca_county[deaths > cases, death_rate := 0]
 
 ### 3. Data Visualization
 
-The tools used to visualize data mainly are `ggplot`, `plotly` and `DT`.
+The tools used to visualize data mainly are `ggplot`, `plotly`.
 
 <br>
 
@@ -182,6 +188,7 @@ table <- dat %>%
 
 datatable(table)
 ```
+
 ### Figure 1: Ongoing trends of COVID 19 CFR and IFR 
 
 ```{r, echo=FALSE}
@@ -191,7 +198,7 @@ fig1 <- cv_national %>%
   geom_line(aes(date, IFR), color = "#69b3a2", size = 0.8, na.rm = TRUE)+
   geom_vline(aes(xintercept=as.numeric(ymd("2020-03-25"))), linetype = "dashed", color = "red", size = 0.5)+
   geom_vline(aes(xintercept=as.numeric(ymd("2020-02-26"))), linetype = "dashed", color = "darkred", size = 0.5)+
-  labs(title = "Overview of COVID 19 CFR and IFR in US", y = "CFR/IFR")+
+  labs(title = "Figure 1: Overview of COVID 19 CFR and IFR in US", y = "CFR/IFR")+
   theme_bw()
 
 ggplotly(fig1)
@@ -216,7 +223,7 @@ fig2 <- dat_today %>%
   geom_hline(yintercept = mean_mortality, linetype = "dashed", color = "red")+
   coord_flip()+
   geom_errorbar()+
-  labs(x = "State", y = "Death Rate", subtitle = "Hypothesis Test of Covid Death Rate")+
+  labs(x = "State", y = "Death Rate", subtitle = "Figure 2: Hypothesis Test of Covid Death Rate")+
   theme_bw()+
   theme(text = element_text(size = 18), legend.position = "none")
 
@@ -239,6 +246,29 @@ fig3 <- dat_today %>%
 fig3
 ```
 
+```{r eval=FALSE, echo=FALSE}
+# Death_rate vs. pop_density
+
+filtered_dat_today <- dat_today %>%
+  filter(state!="District of Columbia")
+
+lmDeath_rate = lm(death_rate~pop_density, data = filtered_dat_today)
+summary(lmDeath_rate)
+
+# Death_rate vs. pop_density adjusted for population, cases, deaths, newcases, newdeaths
+lmDeath_rate2 = lm(death_rate~pop_density + deaths + population + cases + newcases + newdeaths, data = filtered_dat_today)
+summary(lmDeath_rate2)
+
+
+plot(filtered_dat_today$pop_density, filtered_dat_today$death_rate, main = "Figure 3: COVID-19 death rate vs. population density", xlab = "population density", ylab = "death rate")
+abline(lmDeath_rate2)
+
+library(sjPlot)
+tab_model(lmDeath_rate2, show.ci = FALSE, show.stat = TRUE)
+
+plot_model(lmDeath_rate2, type = "pred", terms = c("cases", "pop_density"), title = "Figure 4: Predicted values of death rate vs. cases")
+```
+
 Figure 3 presents a potential positive association between population density and death rate. States with larger population but lower population density have lower death rate, and perhaps location and people behavior differentiate this.
 
 ### Figure 4: New cases development in California 
@@ -252,17 +282,17 @@ dat_policy <- dat %>%
 
 fig4 <- dat_policy %>%
   ggplot(aes(x = date, y = newcases))+
-  annotate(geom = "rect", xmin = ymd(min(dat_policy$date)), xmax = ymd("2020-03-19"), ymin =0, ymax = 15000, fill = "blue", alpha = 0.2)+
+  annotate(geom = "rect", xmin = ymd(min(dat_policy$date)), xmax = ymd("2020-03-19"), ymin =0, ymax = 20000, fill = "blue", alpha = 0.2)+
   annotate("text", x = ymd("2020-02-15"), y = 7000, label = "loose")+
-  annotate(geom = "rect", xmin = ymd("2020-03-19"), xmax = ymd("2020-05-25"), ymin =0, ymax = 15000, fill = "red", alpha = 0.2)+
+  annotate(geom = "rect", xmin = ymd("2020-03-19"), xmax = ymd("2020-05-25"), ymin =0, ymax = 20000, fill = "red", alpha = 0.2)+
   annotate("text", x = ymd("2020-04-20"), y = 7000, label = "first order")+
-  annotate(geom = "rect", xmin = ymd("2020-05-25"), xmax = ymd("2020-07-13"), ymin =0, ymax = 15000, fill = "blue", alpha = 0.2)+
+  annotate(geom = "rect", xmin = ymd("2020-05-25"), xmax = ymd("2020-07-13"), ymin =0, ymax = 20000, fill = "blue", alpha = 0.2)+
   annotate("text", x = ymd("2020-06-15"), y = 7000, label = "loose")+
-  annotate(geom = "rect", xmin = ymd("2020-07-13"), xmax = ymd("2020-09-22"), ymin =0, ymax = 15000, fill = "red", alpha = 0.2)+
+  annotate(geom = "rect", xmin = ymd("2020-07-13"), xmax = ymd("2020-09-22"), ymin =0, ymax = 20000, fill = "red", alpha = 0.2)+
   annotate("text", x = ymd("2020-08-15"), y = 7000, label = "statewide order")+
-  annotate(geom = "rect", xmin = ymd("2020-09-22"), xmax = ymd("2020-11-21"), ymin =0, ymax = 15000, fill = "blue", alpha = 0.2)+
+  annotate(geom = "rect", xmin = ymd("2020-09-22"), xmax = ymd("2020-11-21"), ymin =0, ymax = 20000, fill = "blue", alpha = 0.2)+
   annotate("text", x = ymd("2020-10-20"), y = 7000, label = "loose")+
-  annotate(geom = "rect", xmin = ymd("2020-11-21"), xmax = ymd(max(dat_policy$date)), ymin =0, ymax = 15000, fill = "red", alpha = 0.2)+
+  annotate(geom = "rect", xmin = ymd("2020-11-21"), xmax = ymd(max(dat_policy$date)), ymin =0, ymax = 20000, fill = "red", alpha = 0.2)+
   annotate("text", x = ymd("2020-11-21"), y = 7000, label = "limited lockdown")+
   geom_line(color = "#69b3a2")+
   geom_vline(aes(xintercept=as.numeric(ymd("2020-06-18"))), linetype = "dashed", color = "orange", size = 0.5, text = "wear a mask")+ ##wear a mask
@@ -300,10 +330,10 @@ Figure 4 show new cases development in California. On March 19, California manda
 
 ## **Conclusion**
 
-1. COVID death rate is associated with population density. 
-2. Stay home order has an positive impact on COVID pandemic.
+1. COVID death rate is positively associated with population density. 
+2. Policy responses have a positive impact on COVID pandemic.
 
-The downside of this project is that lockdown data is not up-to-date and CFR is sophisticated to estimate.
+The downside of this project is that CFR is sophisticated to estimate and lockdown data is not up-to-date.
 
 **Suggestion: stay at home and keep practicing social distance and wearing masks!**
 
